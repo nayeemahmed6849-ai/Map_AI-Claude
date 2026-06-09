@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PNG to Base64 Converter</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #f1f5f9; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .card { background: #1e293b; border-radius: 20px; padding: 32px; max-width: 520px; width: 100%; border: 1px solid #334155; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; color: #f8fafc; }
+  p { font-size: 13px; color: #94a3b8; margin-bottom: 24px; }
+  .drop-zone {
+    border: 2px dashed #3b82f6;
+    border-radius: 14px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(59,130,246,0.05);
+  }
+  .drop-zone:hover, .drop-zone.dragover { background: rgba(59,130,246,0.12); border-color: #60a5fa; }
+  .drop-zone svg { margin-bottom: 12px; opacity: 0.7; }
+  .drop-zone span { display: block; font-size: 14px; color: #94a3b8; }
+  .drop-zone strong { color: #60a5fa; }
+  input[type=file] { display: none; }
+
+  .result { display: none; margin-top: 24px; }
+  .result.show { display: block; }
+  .status { padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+  .status.success { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+  .status.error { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+
+  .instructions { background: #0f172a; border-radius: 12px; padding: 16px; font-size: 12px; color: #94a3b8; line-height: 1.7; margin-bottom: 16px; border: 1px solid #1e293b; }
+  .instructions b { color: #60a5fa; }
+
+  .btn {
+    width: 100%;
+    padding: 13px;
+    border-radius: 12px;
+    border: none;
+    background: #3b82f6;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: inherit;
+  }
+  .btn:hover { background: #2563eb; }
+  .btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+
+  .size-info { font-size: 11px; color: #64748b; text-align: center; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>🗺️ PNG → Base64 JS Converter</h2>
+  <p>Convert your LULC PNG image into a <code>lulc_image_base64.js</code> file so it works locally without a server.</p>
+
+  <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="17 8 12 3 7 8"/>
+      <line x1="12" y1="3" x2="12" y2="15"/>
+    </svg>
+    <span><strong>Click to select</strong> or drag & drop</span>
+    <span style="margin-top:6px;">RENDERDKLULC2025_1.png</span>
+  </div>
+  <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp">
+
+  <div class="result" id="result">
+    <div class="status" id="statusMsg"></div>
+    <div class="instructions">
+      <b>✅ Next steps:</b><br>
+      1. Click <b>Download lulc_image_base64.js</b> below<br>
+      2. Place the downloaded file inside your <b>data/</b> folder<br>
+      3. Your folder should look like:<br>
+      &nbsp;&nbsp;&nbsp;<b>App_AI/</b><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>index.html</b><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>data/lulc_image_base64.js</b> ← here<br>
+      4. Open <b>index.html</b> again — LULC will appear! 🎉
+    </div>
+    <button class="btn" id="downloadBtn" disabled>⬇️ Download lulc_image_base64.js</button>
+    <div class="size-info" id="sizeInfo"></div>
+  </div>
+</div>
+
+<script>
+  let base64DataUrl = null;
+
+  function processFile(file) {
+    if (!file || !file.type.startsWith('image/')) {
+      showError('Please select a valid image file (PNG, JPG, WebP).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      base64DataUrl = e.target.result;
+      const sizeKB = Math.round(base64DataUrl.length / 1024);
+      const sizeMB = (sizeKB / 1024).toFixed(1);
+
+      document.getElementById('result').classList.add('show');
+      document.getElementById('statusMsg').className = 'status success';
+      document.getElementById('statusMsg').textContent = `✅ "${file.name}" converted successfully!`;
+      document.getElementById('downloadBtn').disabled = false;
+      document.getElementById('sizeInfo').textContent = `File size: ~${sizeMB} MB (${sizeKB.toLocaleString()} KB)`;
+    };
+    reader.onerror = () => showError('Failed to read file. Please try again.');
+    reader.readAsDataURL(file);
+  }
+
+  function showError(msg) {
+    document.getElementById('result').classList.add('show');
+    document.getElementById('statusMsg').className = 'status error';
+    document.getElementById('statusMsg').textContent = '❌ ' + msg;
+    document.getElementById('downloadBtn').disabled = true;
+  }
+
+  document.getElementById('fileInput').addEventListener('change', (e) => {
+    if (e.target.files[0]) processFile(e.target.files[0]);
+  });
+
+  const dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
+  });
+
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    if (!base64DataUrl) return;
+    const jsContent = `var lulcBase64 = "${base64DataUrl}";`;
+    const blob = new Blob([jsContent], { type: 'application/javascript' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'lulc_image_base64.js';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+</script>
+</body>
+</html>
