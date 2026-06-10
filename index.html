@@ -438,12 +438,33 @@
                     'raster-opacity': opacityVal,
                     'raster-resampling': 'linear'
                 }
+                // Note: no 'slot' here — we insert before first road layer manually
             };
-            // Use 'middle' slot: LULC renders ABOVE terrain but BELOW roads & labels
             if (isStandard) {
-                layerConfig.slot = 'middle';
+                // Find the first road layer to insert LULC just below it
+                const layers = map.getStyle().layers;
+                let firstRoadLayer = null;
+                for (const layer of layers) {
+                    const id = layer.id.toLowerCase();
+                    if (
+                        id.includes('road') ||
+                        id.includes('tunnel') ||
+                        id.includes('bridge') ||
+                        id.includes('street') ||
+                        id.includes('highway')
+                    ) {
+                        firstRoadLayer = layer.id;
+                        break;
+                    }
+                }
+                if (firstRoadLayer) {
+                    map.addLayer(layerConfig, firstRoadLayer);
+                } else {
+                    map.addLayer(layerConfig);
+                }
+            } else {
+                map.addLayer(layerConfig);
             }
-            map.addLayer(layerConfig);
         }
     }
 
