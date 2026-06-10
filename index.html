@@ -410,13 +410,9 @@
                 }
             }
 
-            if (insertBeforeId) {
-                map.addLayer(layerConfig, insertBeforeId);
-            } else {
-                // Standard v3 uses slots — 'middle' = above terrain, below labels/roads
-                layerConfig.slot = 'middle';
-                map.addLayer(layerConfig);
-            }
+            // 'top' slot = LULC above everything including roads & labels
+            layerConfig.slot = 'top';
+            map.addLayer(layerConfig);
         }
     }
 
