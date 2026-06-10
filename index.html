@@ -403,9 +403,13 @@
         map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
 
         if (!map.getSource('dhaka_lulc')) {
+            // On Vercel: always use PNG directly. Locally: use base64 if available (avoids CORS on file://)
+            const lulcUrl = (typeof lulcBase64 !== 'undefined' && lulcBase64)
+                ? lulcBase64
+                : 'data/RENDERDKLULC2025_1.png';
             map.addSource('dhaka_lulc', {
                 'type': 'image',
-                'url': typeof lulcBase64 !== 'undefined' ? lulcBase64 : 'data/RENDERDKLULC2025_1.png',
+                'url': lulcUrl,
                 'coordinates': [
                     [90.330093395, 23.900217123],
                     [90.509217462, 23.900217123],
@@ -418,15 +422,27 @@
             const isChecked = document.getElementById('toggle-lulc').checked;
             const opacityVal = parseInt(document.getElementById('slider-lulc').value) / 100;
             const style = map.getStyle();
-            const isStandard = style && (style.id === 'standard' || style.id === 'standard-satellite' || style.name === 'Mapbox Standard' || style.name === 'Mapbox Standard Satellite' || (style.imports && style.imports.length > 0));
+            const isStandard = style && (
+                style.id === 'standard' ||
+                style.id === 'standard-satellite' ||
+                style.name === 'Mapbox Standard' ||
+                style.name === 'Mapbox Standard Satellite' ||
+                (style.imports && style.imports.length > 0)
+            );
             const layerConfig = {
                 'id': 'dhaka_lulc_layer',
                 'type': 'raster',
                 'source': 'dhaka_lulc',
                 'layout': { 'visibility': isChecked ? 'visible' : 'none' },
-                'paint': { 'raster-opacity': opacityVal }
+                'paint': {
+                    'raster-opacity': opacityVal,
+                    'raster-resampling': 'linear'
+                }
             };
-            if (isStandard) layerConfig.slot = 'bottom';
+            // Use 'top' slot so LULC renders ABOVE terrain/satellite on Standard styles
+            if (isStandard) {
+                layerConfig.slot = 'top';
+            }
             map.addLayer(layerConfig);
         }
     }
