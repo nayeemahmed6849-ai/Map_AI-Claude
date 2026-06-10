@@ -344,7 +344,7 @@
 
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
 <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
-<script src="data/lulc_image_base64.js"></script>
+    <script src="lulc_image_base64.js"></script>
 
 <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoiYWhtZWQ2ODQ5IiwiYSI6ImNtcDl1aXJjbTBpczAyc3NrYXVyaDdzeHcifQ.a7G0ZTgEg_ivd87WhjfXnQ';
@@ -406,7 +406,7 @@
             // On Vercel: always use PNG directly. Locally: use base64 if available (avoids CORS on file://)
             const lulcUrl = (typeof lulcBase64 !== 'undefined' && lulcBase64)
                 ? lulcBase64
-                : 'data/RENDERDKLULC2025_1.png';
+                : 'RENDERDKLULC2025_1.png';
             map.addSource('dhaka_lulc', {
                 'type': 'image',
                 'url': lulcUrl,
