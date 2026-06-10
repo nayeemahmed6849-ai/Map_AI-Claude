@@ -439,9 +439,9 @@
                     'raster-resampling': 'linear'
                 }
             };
-            // Use 'top' slot so LULC renders ABOVE terrain/satellite on Standard styles
+            // Use 'middle' slot: LULC renders ABOVE terrain but BELOW roads & labels
             if (isStandard) {
-                layerConfig.slot = 'top';
+                layerConfig.slot = 'middle';
             }
             map.addLayer(layerConfig);
         }
